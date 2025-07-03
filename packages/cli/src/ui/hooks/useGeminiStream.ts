@@ -5,6 +5,7 @@
  */
 
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import type React from 'react';
 import { useInput } from 'ink';
 import {
   Config,
@@ -511,17 +512,23 @@ export const useGeminiStream = (
       const abortSignal = abortControllerRef.current.signal;
       turnCancelledRef.current = false;
 
+      // Mark the stream as responding BEFORE we await any async work to avoid
+      // a race where a re-render could enqueue and start processing another
+      // query while we are still preparing this one.
+      setIsResponding(true);
+
       const { queryToSend, shouldProceed } = await prepareQueryForGemini(
         query,
         userMessageTimestamp,
         abortSignal,
       );
 
+      // If we decided not to proceed, revert the responding state and exit.
       if (!shouldProceed || queryToSend === null) {
+        setIsResponding(false);
         return;
       }
 
-      setIsResponding(true);
       setInitError(null);
 
       try {
