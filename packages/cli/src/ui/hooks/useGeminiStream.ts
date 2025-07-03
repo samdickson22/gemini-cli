@@ -109,10 +109,12 @@ export const useGeminiStream = (
   }, [config]);
 
   // Queue to hold queries that arrive while Gemini is busy so they are not lost.
-  const pendingQueryQueueRef = useRef<Array<{
-    query: PartListUnion;
-    options?: { isContinuation: boolean };
-  }>>([]);
+  const pendingQueryQueueRef = useRef<
+    Array<{
+      query: PartListUnion;
+      options?: { isContinuation: boolean };
+    }>
+  >([]);
 
   const [toolCalls, scheduleToolCalls, markToolsAsSubmitted] =
     useReactToolScheduler(

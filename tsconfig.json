@@ -25,9 +25,6 @@
       "@google/genai"
     ]
   },
-  "references": [
-    { "path": "packages/core" },
-    { "path": "packages/cli" }
-  ],
+  "references": [{ "path": "packages/core" }, { "path": "packages/cli" }],
   "files": []
 }
