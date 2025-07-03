@@ -1,3 +1,11 @@
+/**
+ * @license
+ * Copyright 2025 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/* eslint import/no-default-export: 0 */
+
 declare module 'ink-spinner' {
   import type { FC } from 'react';
 
@@ -10,10 +18,11 @@ declare module 'ink-spinner' {
    * Ink-compatible spinner component that renders a variety of CLI spinners.
    *
    * NOTE: The upstream package returns an `InkElement` which is incompatible with
-   * `React.JSX` in React 18+ type definitions.  We re-declare it here as a normal
-   * React `FC` so it can be used inside JSX without type errors.
+   * React 18+ type definitions. We re-declare it here as a standard React
+   * functional component so that it can be consumed in JSX while preserving
+   * type-safety.
    */
-  const Spinner: FC<SpinnerProps>;
+  export const Spinner: FC<SpinnerProps>;
 
   export default Spinner;
 }
