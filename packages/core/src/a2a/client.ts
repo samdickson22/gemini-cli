@@ -25,7 +25,7 @@ export class A2AClient {
   async sendMessage(params: MessageSendParams): Promise<Task | Message> {
     const request: JSONRPCRequest = {
       jsonrpc: '2.0',
-      id: Date.now(),
+id: crypto.randomUUID(),
       method: 'message/send',
       params: params as Record<string, unknown>,
     };
