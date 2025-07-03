@@ -58,6 +58,10 @@ export class A2AClient {
       }
     } catch (e) {
       // Fall through to using the base URL.
+      const error = e as Error;
+      console.warn(
+        `A2A endpoint discovery failed: ${error.message}. Falling back to base URL.`,
+      );
     }
 
     return this.config.baseUrl;
