@@ -15,7 +15,15 @@
     "moduleResolution": "nodenext",
     "target": "es2022",
     "jsx": "react-jsx",
-    "types": ["node", "react", "react-dom", "ink", "vitest/globals"]
+    "types": [
+      "node",
+      "react",
+      "react-dom",
+      "ink",
+      "vitest/globals",
+      "@google/gemini-cli-core",
+      "@google/genai"
+    ]
   },
   "references": [
     { "path": "packages/core" },
