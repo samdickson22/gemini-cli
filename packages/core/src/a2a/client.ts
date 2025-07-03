@@ -5,6 +5,7 @@
  */
 
 import { fetch } from 'undici';
+import crypto from 'crypto';
 import type {
   A2AClientConfig,
   Agent,
@@ -25,7 +26,7 @@ export class A2AClient {
   async sendMessage(params: MessageSendParams): Promise<Task | Message> {
     const request: JSONRPCRequest = {
       jsonrpc: '2.0',
-id: crypto.randomUUID(),
+      id: crypto.randomUUID(),
       method: 'message/send',
       params: params as Record<string, unknown>,
     };
@@ -83,7 +84,27 @@ id: crypto.randomUUID(),
       );
     }
 
-    return response.json() as Promise<JSONRPCResponse>;
+    try {
+      const json = await response.json();
+      if (!this.isJSONRPCResponse(json)) {
+        throw new Error('Invalid JSON-RPC response format');
+      }
+      return json;
+    } catch (e) {
+      throw new Error(`Failed to parse JSON response: ${(e as Error).message}`);
+    }
+  }
+
+  private isJSONRPCResponse(value: unknown): value is JSONRPCResponse {
+    if (typeof value !== 'object' || value === null) {
+      return false;
+    }
+    const resp = value as JSONRPCResponse;
+    return (
+      resp.jsonrpc === '2.0' &&
+      ('result' in resp || 'error' in resp) &&
+      'id' in resp
+    );
   }
 
   private isTask(value: unknown): value is Task {
