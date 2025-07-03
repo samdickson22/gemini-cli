@@ -11,18 +11,11 @@ vi.mock('node:crypto', () => ({
   randomUUID: () => mockUUID,
 }));
 
-vi.mock('../a2a/client.js', () => {
-  // Create a mock constructor for the A2AClient.
-  // This will be used whenever `new A2AClient()` is called in the code under test.
-  const MockedA2AClient = vi.fn().mockImplementation(() => {
-    // The constructor returns an object that simulates an instance of the client.
-    // It only needs to contain the methods that are actually called by the tool.
-    return {
-      sendMessage: mockSendMessage,
-    };
-  });
-  return { A2AClient: MockedA2AClient };
-});
+vi.mock('../a2a/client.js', () => ({
+  A2AClient: vi.fn().mockImplementation(() => ({
+    sendMessage: mockSendMessage,
+  })),
+}));
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { A2ATool } from './a2a-tool.js';
