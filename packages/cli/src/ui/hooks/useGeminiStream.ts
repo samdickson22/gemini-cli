@@ -5,6 +5,7 @@
  */
 
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import type React from 'react';
 import { useInput } from 'ink';
 import {
   Config,
