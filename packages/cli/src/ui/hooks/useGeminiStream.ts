@@ -107,6 +107,12 @@ export const useGeminiStream = (
     return new GitService(config.getProjectRoot());
   }, [config]);
 
+  // Queue to hold queries that arrive while Gemini is busy so they are not lost.
+  const pendingQueryQueueRef = useRef<Array<{
+    query: PartListUnion;
+    options?: { isContinuation: boolean };
+  }>>([]);
+
   const [toolCalls, scheduleToolCalls, markToolsAsSubmitted] =
     useReactToolScheduler(
       async (completedToolCallsFromScheduler) => {
@@ -486,12 +492,17 @@ export const useGeminiStream = (
 
   const submitQuery = useCallback(
     async (query: PartListUnion, options?: { isContinuation: boolean }) => {
+      // If Gemini is busy with a previous request, queue the new one unless it is
+      // a continuation (e.g. tool call response) which must be forwarded
+      // immediately. This prevents user prompts from being silently dropped.
       if (
         (streamingState === StreamingState.Responding ||
           streamingState === StreamingState.WaitingForConfirmation) &&
         !options?.isContinuation
-      )
+      ) {
+        pendingQueryQueueRef.current.push({ query, options });
         return;
+      }
 
       const userMessageTimestamp = Date.now();
       setShowHelp(false);
@@ -784,6 +795,19 @@ export const useGeminiStream = (
     };
     saveRestorableToolCalls();
   }, [toolCalls, config, onDebugMessage, gitService, history, geminiClient]);
+
+  // Process any queued user requests once the stream returns to an idle state.
+  useEffect(() => {
+    if (
+      streamingState === StreamingState.Idle &&
+      pendingQueryQueueRef.current.length > 0
+    ) {
+      const next = pendingQueryQueueRef.current.shift();
+      if (next) {
+        submitQuery(next.query, next.options);
+      }
+    }
+  }, [streamingState, submitQuery]);
 
   return {
     streamingState,
