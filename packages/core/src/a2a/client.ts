@@ -54,8 +54,25 @@ export class A2AClient {
     try {
       const response = await fetch(url.toString());
       if (response.ok) {
-        const agent = (await response.json()) as Agent;
-        return agent.a2a.url;
+        let agentJson: unknown;
+        try {
+          // Parsing user-controlled JSON can throw if the body is not valid JSON.
+          agentJson = await response.json();
+        } catch (e) {
+          console.warn(
+            `Failed to parse agent.json response: ${(e as Error).message}. Falling back to base URL.`,
+          );
+          return this.config.baseUrl;
+        }
+
+        // Validate the structure before accessing nested properties to avoid
+        // runtime TypeError crashes and potential DoS vectors.
+        if (this.isAgent(agentJson)) {
+          return agentJson.a2a.url;
+        }
+        console.warn(
+          'agent.json did not match expected schema. Falling back to base URL.',
+        );
       }
     } catch (e) {
       // Fall through to using the base URL.
@@ -127,5 +144,19 @@ export class A2AClient {
 
   private isTaskOrMessage(value: unknown): value is Task | Message {
     return this.isTask(value) || this.isMessage(value);
+  }
+
+  // Type-guard to validate the expected Agent structure from agent.json.
+  private isAgent(value: unknown): value is Agent {
+    if (typeof value !== 'object' || value === null) {
+      return false;
+    }
+    const maybeAgent = value as Record<string, unknown>;
+    const a2a = maybeAgent['a2a'];
+    if (typeof a2a !== 'object' || a2a === null) {
+      return false;
+    }
+    const url = (a2a as Record<string, unknown>)['url'];
+    return typeof url === 'string' && url.length > 0;
   }
 }
