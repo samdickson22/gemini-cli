@@ -514,10 +514,10 @@ export const useGeminiStream = (
       const abortSignal = abortControllerRef.current.signal;
       turnCancelledRef.current = false;
 
-      // Mark the stream as responding BEFORE we await any async work to avoid
-      // a race where a re-render could enqueue and start processing another
-      // query while we are still preparing this one.
-      setIsResponding(true);
+// Mark the stream as responding BEFORE we await any async work to avoid
+// a race where a re-render could enqueue and start processing another
+// query while we are still preparing this one.
+setIsResponding(true);
 
       const { queryToSend, shouldProceed } = await prepareQueryForGemini(
         query,
