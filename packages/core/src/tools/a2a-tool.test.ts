@@ -20,6 +20,7 @@ vi.mock('../a2a/client.js', () => ({
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { A2ATool } from './a2a-tool.js';
 import { Task } from '../a2a/types.js';
+import { ToolConfirmationOutcome } from './tools.js';
 
 describe('A2ATool', () => {
   let tool: A2ATool;
@@ -38,6 +39,13 @@ describe('A2ATool', () => {
       status: {
         state: 'completed',
       },
+      history: [
+        {
+          kind: 'message',
+          role: 'agent',
+          parts: [{ kind: 'text', text: 'hello back' }],
+        },
+      ],
     };
     mockSendMessage.mockResolvedValue(mockResponse);
 
@@ -55,8 +63,27 @@ describe('A2ATool', () => {
       },
     });
 
-    // Check that the tool returns the formatted response.
+    // Check that the tool returns the formatted response including context and message.
     expect(result.llmContent).toContain('Task ID: task-123');
+    expect(result.llmContent).toContain('Context: context-456');
     expect(result.llmContent).toContain('Status: completed');
+    expect(result.llmContent).toContain('Message: hello back');
+
+    // shouldConfirmExecute behaviour
+    const confirm = await tool.shouldConfirmExecute(
+      { url: 'http://localhost:8888', message: 'Hello' },
+      new AbortController().signal,
+    );
+    expect(confirm).not.toBe(false);
+    // Simulate user approving permanently
+    if (confirm && typeof confirm === 'object' && 'onConfirm' in confirm) {
+      await confirm.onConfirm(ToolConfirmationOutcome.ProceedAlways);
+    }
+    // Second call should return false (allowlisted)
+    const confirm2 = await tool.shouldConfirmExecute(
+      { url: 'http://localhost:8888', message: 'Hello' },
+      new AbortController().signal,
+    );
+    expect(confirm2).toBe(false);
   });
 });

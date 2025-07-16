@@ -67,4 +67,4 @@ a2a(url="http://reviewer.local:8888", message="Can you review the changes in the
 - **Network Requirements**: A2A requires network connectivity between agents. Ensure proper network configuration and security policies.
 - **Authentication**: The current implementation does not include authentication. Consider implementing authentication mechanisms for production deployments.
 - **Asynchronous Tasks**: When the receiving agent returns a Task response, it indicates the operation is running asynchronously. You may need to check back with the agent for task completion status.
-- **Sandboxing**: Like all Gemini CLI tools, A2A operations are subject to sandboxing restrictions when enabled. 
+- **Sandboxing**: Like all Gemini CLI tools, A2A operations are subject to sandboxing restrictions when enabled.
